@@ -1,0 +1,5 @@
+# Auto-generated cvar configuration
+execute_unclipped_draw_vs_on_cpu = true
+execute_unclipped_draw_vs_on_cpu_with_scissor = true
+chron_data_root = "../../../assets"
+mnk_mode = true

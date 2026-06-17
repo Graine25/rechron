@@ -1,11 +1,10 @@
 
-// reeot - ReXGlue Recompiled Project
+// rechron - ReXGlue Recompiled Project
 //
 // This file is yours to edit. 'rexglue migrate' will NOT overwrite it.
 
-#include "generated/default_xex/reeot_config.h"
-#include "generated/default_xex/reeot_init.h"
+#include "generated/default/rechron_init.h"
 
-#include "reeot_app.h"
+#include "rechron_app.h"
 
-REX_DEFINE_APP(reeot, ReeotApp::Create)
+REX_DEFINE_APP(rechron, rechronApp::Create)
