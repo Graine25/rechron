@@ -50,6 +50,11 @@ macro(rexglue_setup_target target_name)
         ${REXGLUE_ENTRYPOINT_INCLUDE_DIR}
     )
     target_link_libraries(${target_name} PRIVATE rex::runtime)
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/metadata/icons")
+        rexglue_embed_metadata(${target_name}
+            DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/metadata/icons"
+            PREFIX "icons")
+    endif()
     rexglue_configure_target(${target_name})
 endmacro()
 

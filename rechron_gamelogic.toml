@@ -11,6 +11,7 @@ out_directory_path = "generated/gamelogic"
 [functions]
 0x88190010 = { name = "smc_TempGameLogic_0001", size = 0x10 }
 0x88190030 = { name = "smc_TempGameLogic_0002", size = 0x10 }
+# IDA Generated
 0x88192800 = { size = 0x68 }
 0x88192888 = { size = 0x4C24 }
 0x881974B0 = { size = 0x210 }
