@@ -7,7 +7,7 @@
 #include <rex/memory.h>
 #include <rex/system/kernel_state.h>
 
-namespace reodyssey::ghp {
+namespace rechron::ghp {
 
 inline auto* GuestMemory() { return rex::system::kernel_state()->memory(); }
 inline uint8_t* GuestBase() { return GuestMemory()->virtual_membase(); }

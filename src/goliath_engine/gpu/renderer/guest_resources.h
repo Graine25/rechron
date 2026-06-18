@@ -17,7 +17,7 @@
 struct IDxcBlobEncoding;
 #endif
 
-namespace reodyssey::render {
+namespace rechron::render {
 
 enum class ResourceType {
   Texture,
@@ -158,4 +158,4 @@ struct GuestShader : GuestResource {
   ~GuestShader();
 };
 
-} // namespace reodyssey::render
+} // namespace rechron::render

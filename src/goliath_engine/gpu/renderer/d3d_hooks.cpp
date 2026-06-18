@@ -1,4 +1,4 @@
-#include <algorithm>
+﻿#include <algorithm>
 #include <array>
 #include <bit>
 #include <cstddef>
@@ -18,10 +18,10 @@
 #include "render_state.h"
 #include "video.h"
 
-namespace rr = reodyssey::render;
-namespace ghp = reodyssey::ghp;
+namespace rr = rechron::render;
+namespace ghp = rechron::ghp;
 
-namespace reodyssey::render {
+namespace rechron::render {
 GuestBuffer *CreateVertexBuffer(uint32_t length);
 GuestBuffer *CreateIndexBuffer(uint32_t length, uint32_t format);
 GuestTexture *CreateTexture(uint32_t width, uint32_t height, uint32_t depth,
@@ -47,7 +47,7 @@ void UnlockIndexBuffer(GuestBuffer *buffer);
 void LockTextureRect(GuestTexture *texture, uint32_t *outPitch,
                      uint32_t *outBits);
 void UnlockTextureRect(GuestTexture *texture);
-} // namespace reodyssey::render
+} // namespace rechron::render
 
 namespace {
 
@@ -242,56 +242,34 @@ struct GuestLockedTail {
 };
 
 } 
-REX_IMPORT(__imp__rex_D3DBaseTexture_LockTail, g_origBaseTextureLockTail,
-           void(void *, uint32_t, void *, uint32_t));
-REX_IMPORT(__imp__rex_D3DVertexBuffer_Lock, g_origVertexBufferLock,
-           uint32_t(void *, uint32_t, uint32_t, uint32_t));
-REX_IMPORT(__imp__rex_D3DIndexBuffer_Lock, g_origIndexBufferLock,
-           uint32_t(void *, uint32_t, uint32_t, uint32_t));
-REX_IMPORT(__imp__rex_LockSurface_D3D_YAXPAUD3DBaseTexture_IIKPAPAEPAK22_Z,
+REX_IMPORT(__imp__smc_D3D_LockSurface,
            g_origLockSurface,
            void(void *, uint32_t, uint32_t, uint32_t, void *, void *, void *,
                 void *));
-REX_IMPORT(__imp__rex_D3DSurface_GetDesc, g_origSurfaceGetDesc,
+REX_IMPORT(__imp__smc_D3DSurface_GetDesc, g_origSurfaceGetDesc,
            void(void *, void *));
-REX_IMPORT(__imp__rex_XGSetVertexDeclaration, g_origXGSetVertexDeclaration,
+REX_IMPORT(__imp__smc_XGSetVertexDeclaration, g_origXGSetVertexDeclaration,
            void(void *, void *));
-REX_IMPORT(__imp__rex_FXeVertexShader_Init, g_origFXeVertexShaderInit,
-           void(void *, void *));
-REX_IMPORT(__imp__rex_FXePixelShader_Init, g_origFXePixelShaderInit,
-           void(void *, void *));
-REX_IMPORT(__imp__rex_RHISetDepthState_YAXPAVFD3DDepthState_Z,
-           g_origRHISetDepthState, void(rr::GuestDevice *, void *));
-REX_IMPORT(__imp__rex_RHISetStencilState, g_origRHISetStencilState,
-           void(rr::GuestDevice *, void *));
-REX_IMPORT(__imp__sub_823CCAC0, g_origApplyRasterizerState,
-           void(rr::GuestDevice *, void *));
-REX_IMPORT(__imp__sub_823C10B0, g_origSetColorWriteEnable,
-           void(rr::GuestDevice *, uint32_t));
-REX_IMPORT(__imp__sub_823C36D8, g_origSetZWriteEnable,
-           void(rr::GuestDevice *, uint32_t));
-REX_IMPORT(__imp__sub_823C6308, g_origSetCullMode,
-           void(rr::GuestDevice *, uint32_t));
-REX_IMPORT(__imp__rex_D3DDevice_SetScissorRect, g_origSetScissorRect,
+REX_IMPORT(__imp__smc_D3DDevice_SetScissorRect, g_origSetScissorRect,
            void(rr::GuestDevice *, rr::GuestRect *));
-REX_IMPORT(__imp__rex_D3DDevice_SetRenderState_ClipPlaneEnable,
+REX_IMPORT(__imp__smc_D3DDevice_SetRenderState_ClipPlaneEnable,
            g_origClipPlaneEnable, void(rr::GuestDevice *, uint32_t));
-REX_IMPORT(__imp__rex_D3DDevice_SetRenderState_ViewportEnable,
+REX_IMPORT(__imp__smc_D3DDevice_SetRenderState_ViewportEnable,
            g_origViewportEnable, void(rr::GuestDevice *, uint32_t));
-REX_IMPORT(__imp__rex_SetPending_ClipPlanes_D3D_YAXPAVCDevice_1_K_Z,
+REX_IMPORT(__imp__smc_D3D_SetPending_ClipPlanes,
            g_origSetPendingClipPlanes, void(rr::GuestDevice *, uint64_t));
 namespace {
 
 uint32_t VertexBufferLock(GuestBuffer *buffer, uint32_t offset, uint32_t size,
                           uint32_t flags) {
   if (!rr::IsReoResource(buffer))
-    return g_origVertexBufferLock(buffer, offset, size, flags);
+    return 0; // TODO: add smc_D3DVertexBuffer_Lock to TOML
   return rr::LockVertexBuffer(buffer, flags);
 }
 uint32_t IndexBufferLock(GuestBuffer *buffer, uint32_t offset, uint32_t size,
                          uint32_t flags) {
   if (!rr::IsReoResource(buffer))
-    return g_origIndexBufferLock(buffer, offset, size, flags);
+    return 0; // TODO: add smc_D3DIndexBuffer_Lock to TOML
   return rr::LockIndexBuffer(buffer, flags);
 }
 
@@ -317,8 +295,7 @@ struct GuestSurfaceDesc {
 void BaseTextureLockTail(GuestTexture *texture, uint32_t arrayIndex,
                          GuestLockedTail *locked, uint32_t flags) {
   if (!rr::IsReoResource(texture)) {
-    g_origBaseTextureLockTail(texture, arrayIndex, locked, flags);
-    return;
+    return; // TODO: add smc_D3DBaseTexture_LockTail to TOML
   }
   if (locked == nullptr)
     return;
@@ -735,7 +712,6 @@ void SetViewport(GuestDevice *device, rr::GuestViewport *viewport) {
 }
 void SetScissorRect(GuestDevice *device, rr::GuestRect *rect) {
   FlushImmediateVertices();
-  g_origSetScissorRect(device, rect);
   rr::SetScissorRect(device, rect);
 }
 void SetRenderTarget(GuestDevice *device, uint32_t index,
@@ -771,7 +747,6 @@ void SetDepthStencilSurface(GuestDevice *device, GuestSurface *surface) {
 
 void RHISetDepthState(GuestDevice *device, void *depthStateGuest) {
   FlushImmediateVertices();
-  g_origRHISetDepthState(device, depthStateGuest);
 
   const auto *ds = reinterpret_cast<const rex::be<uint32_t> *>(depthStateGuest);
   if (ds == nullptr)
@@ -785,7 +760,6 @@ void RHISetDepthState(GuestDevice *device, void *depthStateGuest) {
 
 void RHISetStencilState(GuestDevice *device, void *stencilStateGuest) {
   FlushImmediateVertices();
-  g_origRHISetStencilState(device, stencilStateGuest);
 
   const auto *ss =
       reinterpret_cast<const rex::be<uint32_t> *>(stencilStateGuest);
@@ -874,7 +848,6 @@ RENDER_STATE_HOOK(RsZEnable, D3DRS_ZENABLE)
 
 void ApplyRasterizerState(GuestDevice *device, void *rasterizerStateGuest) {
   FlushImmediateVertices();
-  g_origApplyRasterizerState(device, rasterizerStateGuest);
 
   if (rasterizerStateGuest == nullptr)
     return;
@@ -885,38 +858,32 @@ void ApplyRasterizerState(GuestDevice *device, void *rasterizerStateGuest) {
 
 void SetColorWriteEnable(GuestDevice *device, uint32_t value) {
   FlushImmediateVertices();
-  g_origSetColorWriteEnable(device, value);
   rr::SetRenderState(device, rr::D3DRS_COLORWRITEENABLE,
                      value != 0 ? 0xFu : 0u);
 }
 
 void SetZWriteEnable(GuestDevice *device, uint32_t value) {
   FlushImmediateVertices();
-  g_origSetZWriteEnable(device, value);
   rr::SetRenderState(device, rr::D3DRS_ZWRITEENABLE, value);
 }
 
 void SetCullMode(GuestDevice *device, uint32_t value) {
   FlushImmediateVertices();
-  g_origSetCullMode(device, value);
   rr::SetRenderState(device, rr::D3DRS_CULLMODE, value);
 }
 
 void RsClipPlaneEnable(GuestDevice *device, uint32_t value) {
   FlushImmediateVertices();
-  g_origClipPlaneEnable(device, value);
   rr::UpdateClipPlaneConstants(device);
 }
 
 void RsViewportEnable(GuestDevice *device, uint32_t value) {
   FlushImmediateVertices();
-  g_origViewportEnable(device, value);
   rr::SetViewportEnable(device, value);
 }
 
 void SetPendingClipPlanes(GuestDevice *device, uint64_t dirtyMask) {
   FlushImmediateVertices();
-  g_origSetPendingClipPlanes(device, dirtyMask);
   rr::UpdateClipPlaneConstants(device);
 }
 
@@ -949,14 +916,12 @@ void SetVertexDeclarationBind(GuestDevice *device,
     rr::SetVertexDeclaration(device, reoDecl);
 }
 void *FXeVertexShaderInit(uint8_t *self, uint32_t *blob) {
-  g_origFXeVertexShaderInit(self, blob);
   uint32_t d3dShader = *reinterpret_cast<rex::be<uint32_t> *>(self + 8);
   rr::RegisterShaderAlias(d3dShader, rr::CreateVertexShader(blob));
   return self;
 }
 
 void *FXePixelShaderInit(uint8_t *self, uint32_t *blob) {
-  g_origFXePixelShaderInit(self, blob);
   uint32_t d3dShader = *reinterpret_cast<rex::be<uint32_t> *>(self + 8);
   rr::RegisterShaderAlias(d3dShader, rr::CreatePixelShader(blob));
   return self;
@@ -1016,14 +981,19 @@ void RHIDrawIndexedPrimitiveUP(GuestDevice *device, uint32_t primType,
 // hooooks
 // ===========================================================================
 
+REX_HOOK(smc_D3DDevice_CreateTexture, CreateTexture);
+REX_HOOK(smc_D3DDevice_CreateSurface, CreateSurface);
+REX_HOOK(smc_D3DSurface_GetDesc, SurfaceGetDesc);
+REX_HOOK(smc_D3D_LockSurface, LockSurface);
+REX_HOOK(smc_D3D_UnlockResource, UnlockResourceHook);
+REX_HOOK(smc_XGSetVertexDeclaration, XGSetVertexDeclaration);
+REX_HOOK(smc_D3DDevice_CreateVertexShader, CreateVertexShader);
+REX_HOOK(smc_D3DDevice_CreatePixelShader, CreatePixelShader);
+
+/* Do not have any of these - LO-Specific? 
 REX_HOOK(rex_D3DDevice_CreateVertexBuffer, CreateVertexBuffer);
 REX_HOOK(rex_D3DDevice_CreateIndexBuffer, CreateIndexBuffer);
-REX_HOOK(rex_D3DDevice_CreateTexture, CreateTexture);
-REX_HOOK(rex_D3DDevice_CreateSurface, CreateSurface);
-REX_HOOK(rex_D3DDevice_CreateVertexDeclaration, CreateVertexDeclaration);
-REX_HOOK(rex_XGSetVertexDeclaration, XGSetVertexDeclaration);
-REX_HOOK(rex_D3DDevice_CreateVertexShader, CreateVertexShader);
-REX_HOOK(rex_D3DDevice_CreatePixelShader, CreatePixelShader);
+
 REX_HOOK(rex_FXeVertexShader_Init, FXeVertexShaderInit);
 REX_HOOK(rex_FXePixelShader_Init, FXePixelShaderInit);
 REX_HOOK(rex_D3DXCreateTextureFromFileInMemory,
@@ -1031,61 +1001,16 @@ REX_HOOK(rex_D3DXCreateTextureFromFileInMemory,
 REX_HOOK(rex_D3DXCreateTextureFromFileInMemoryEx,
          D3DXCreateTextureFromFileInMemoryEx);
 
+REX_HOOK(rex_D3DDevice_CreateVertexDeclaration, CreateVertexDeclaration);
+
 REX_HOOK(rex_D3DVertexBuffer_Lock, VertexBufferLock);
 REX_HOOK(rex_D3DIndexBuffer_Lock, IndexBufferLock);
 REX_HOOK(rex_D3DSurface_LockRect, SurfaceLockRect);
 REX_HOOK(rex_D3DBaseTexture_LockTail, BaseTextureLockTail);
-REX_HOOK(rex_D3DSurface_GetDesc, SurfaceGetDesc);
-REX_HOOK(rex_LockSurface_D3D_YAXPAUD3DBaseTexture_IIKPAPAEPAK22_Z, LockSurface);
-REX_HOOK(rex_UnlockResource_D3D_YAXPAUD3DResource_PAX1_Z, UnlockResourceHook);
 
-REX_HOOK(rex_D3DDevice_SetTexture, SetTexture);
-REX_HOOK(rex_D3DDevice_SetVertexShader, SetVertexShader);
-REX_HOOK(rex_D3DDevice_SetPixelShader, SetPixelShader);
-REX_HOOK(rex_D3DDevice_SetVertexShaderConstantFN, SetVertexShaderConstantFN);
-REX_HOOK(rex_D3DDevice_SetPixelShaderConstantFN, SetPixelShaderConstantFN);
-REX_HOOK(rex_D3DDevice_SetVertexShaderConstantB, SetVertexShaderConstantB);
-REX_HOOK(rex_D3DDevice_SetPixelShaderConstantB, SetPixelShaderConstantB);
-REX_HOOK(rex_D3DDevice_SetVertexShaderConstantI, SetVertexShaderConstantI);
-REX_HOOK(rex_D3DDevice_SetPixelShaderConstantI, SetPixelShaderConstantI);
-REX_HOOK(rex_D3DDevice_SetStreamSource, SetStreamSource);
-REX_HOOK(rex_D3DDevice_SetIndices, SetIndices);
-REX_HOOK(rex_D3DDevice_SetViewport, SetViewport);
-REX_HOOK(rex_D3DDevice_SetScissorRect, SetScissorRect);
-REX_HOOK(rex_D3DDevice_SetRenderTarget, SetRenderTarget);
-REX_HOOK(rex_D3DDevice_SetDepthStencilSurface, SetDepthStencilSurface);
 REX_HOOK(rex_RHISetDepthState_YAXPAVFD3DDepthState_Z, RHISetDepthState);
 REX_HOOK(rex_RHISetStencilState, RHISetStencilState);
 
-REX_HOOK(rex_D3DDevice_ClearF, ClearF);
-REX_HOOK(rex_D3DDevice_Resolve, Resolve);
-
-REX_HOOK(rex_D3DDevice_SetRenderState_AlphaBlendEnable, RsAlphaBlendEnable);
-REX_HOOK(rex_D3DDevice_SetRenderState_AlphaTestEnable, RsAlphaTestEnable);
-REX_HOOK(rex_D3DDevice_SetRenderState_BlendOp, RsBlendOp);
-REX_HOOK(rex_D3DDevice_SetRenderState_BlendOpAlpha, RsBlendOpAlpha);
-REX_HOOK(rex_D3DDevice_SetRenderState_ColorWriteEnable, RsColorWriteEnable);
-REX_HOOK(rex_D3DDevice_SetRenderState_DepthBias, RsDepthBias);
-REX_HOOK(rex_D3DDevice_SetRenderState_DestBlend, RsDestBlend);
-REX_HOOK(rex_D3DDevice_SetRenderState_DestBlendAlpha, RsDestBlendAlpha);
-REX_HOOK(rex_D3DDevice_SetRenderState_SlopeScaleDepthBias,
-         RsSlopeScaleDepthBias);
-REX_HOOK(rex_D3DDevice_SetRenderState_SrcBlend, RsSrcBlend);
-REX_HOOK(rex_D3DDevice_SetRenderState_SrcBlendAlpha, RsSrcBlendAlpha);
-REX_HOOK(rex_D3DDevice_SetRenderState_ZEnable, RsZEnable);
-REX_HOOK(sub_823C10B0, SetColorWriteEnable);
-REX_HOOK(sub_823C36D8, SetZWriteEnable);
-REX_HOOK(sub_823CCAC0, ApplyRasterizerState);
-REX_HOOK(sub_823C6308, SetCullMode);
-REX_HOOK(rex_D3DDevice_SetRenderState_ClipPlaneEnable, RsClipPlaneEnable);
-REX_HOOK(rex_D3DDevice_SetRenderState_ViewportEnable, RsViewportEnable);
-REX_HOOK(rex_SetPending_ClipPlanes_D3D_YAXPAVCDevice_1_K_Z,
-         SetPendingClipPlanes);
-
-REX_HOOK(rex_D3DDevice_DrawVertices, DrawVertices);
-REX_HOOK(rex_D3DDevice_DrawIndexedVertices, DrawIndexedVertices);
-REX_HOOK(rex_D3DDevice_DrawVerticesUP, DrawVerticesUP);
-REX_HOOK(rex_D3DDevice_BeginVertices, BeginVertices);
 REX_HOOK(
     rex_RHICreateBoundShaderState_YA_AVFBoundShaderStateRHIRef_PAUD3DVertexDeclaration_PAKPAUFXeVertexShader_PAUFXePixelShader_Z,
     RHICreateBoundShaderState);
@@ -1101,15 +1026,60 @@ REX_HOOK(sub_823C58E8,
          SetVertexDeclarationBind); 
 REX_HOOK(sub_823C5A20, SetBoundShaderState);
 
+*/
+
+REX_HOOK(smc_D3DDevice_SetTexture, SetTexture);
+REX_HOOK(smc_D3DDevice_SetVertexShader, SetVertexShader);
+REX_HOOK(smc_D3DDevice_SetPixelShader, SetPixelShader);
+REX_HOOK(smc_D3DDevice_SetVertexShaderConstantFN, SetVertexShaderConstantFN);
+REX_HOOK(smc_D3DDevice_SetPixelShaderConstantFN, SetPixelShaderConstantFN);
+REX_HOOK(smc_D3DDevice_SetVertexShaderConstantB, SetVertexShaderConstantB);
+REX_HOOK(smc_D3DDevice_SetPixelShaderConstantB, SetPixelShaderConstantB);
+REX_HOOK(smc_D3DDevice_SetVertexShaderConstantI, SetVertexShaderConstantI);
+REX_HOOK(smc_D3DDevice_SetPixelShaderConstantI, SetPixelShaderConstantI);
+REX_HOOK(smc_D3DDevice_SetStreamSource, SetStreamSource);
+REX_HOOK(smc_D3DDevice_SetIndices, SetIndices);
+REX_HOOK(smc_D3DDevice_SetViewport, SetViewport);
+REX_HOOK(smc_D3DDevice_SetScissorRect, SetScissorRect);
+REX_HOOK(smc_D3DDevice_SetRenderTarget, SetRenderTarget);
+REX_HOOK(smc_D3DDevice_SetDepthStencilSurface, SetDepthStencilSurface);
+
+REX_HOOK(smc_D3DDevice_ClearF, ClearF);
+REX_HOOK(smc_D3DDevice_Resolve, Resolve);
+
+REX_HOOK(smc_D3DDevice_SetRenderState_AlphaBlendEnable, RsAlphaBlendEnable);
+REX_HOOK(smc_D3DDevice_SetRenderState_AlphaTestEnable, RsAlphaTestEnable);
+REX_HOOK(smc_D3DDevice_SetRenderState_BlendOp, RsBlendOp);
+REX_HOOK(smc_D3DDevice_SetRenderState_BlendOpAlpha, RsBlendOpAlpha);
+REX_HOOK(smc_D3DDevice_SetRenderState_ColorWriteEnable, RsColorWriteEnable);
+REX_HOOK(smc_D3DDevice_SetRenderState_DepthBias, RsDepthBias);
+REX_HOOK(smc_D3DDevice_SetRenderState_DestBlend, RsDestBlend);
+REX_HOOK(smc_D3DDevice_SetRenderState_DestBlendAlpha, RsDestBlendAlpha);
+REX_HOOK(smc_D3DDevice_SetRenderState_SlopeScaleDepthBias,
+         RsSlopeScaleDepthBias);
+REX_HOOK(smc_D3DDevice_SetRenderState_SrcBlend, RsSrcBlend);
+REX_HOOK(smc_D3DDevice_SetRenderState_SrcBlendAlpha, RsSrcBlendAlpha);
+REX_HOOK(smc_D3DDevice_SetRenderState_ZEnable, RsZEnable);
+REX_HOOK(smc_D3DDevice_SetRenderState_ZWriteEnable, SetZWriteEnable);
+REX_HOOK(smc_D3DDevice_SetRenderState_CullMode, SetCullMode);
+REX_HOOK(smc_D3DDevice_SetRenderState_ClipPlaneEnable, RsClipPlaneEnable);
+REX_HOOK(smc_D3DDevice_SetRenderState_ViewportEnable, RsViewportEnable);
+REX_HOOK(smc_D3D_SetPending_ClipPlanes,
+         SetPendingClipPlanes);
+
+REX_HOOK(smc_D3DDevice_DrawVertices, DrawVertices);
+REX_HOOK(smc_D3DDevice_DrawIndexedVertices, DrawIndexedVertices);
+REX_HOOK(smc_D3DDevice_DrawVerticesUP, DrawVerticesUP);
+REX_HOOK(smc_D3DDevice_BeginVertices, BeginVertices);
 // Present + GPU-idle
-REX_HOOK(rex_D3DDevice_Swap, Swap);
-REX_HOOK(rex_BlockOnFence_CDevice_D3D_QAAXKW4_D3DBLOCKTYPE_PAUD3DResource_Z,
+REX_HOOK(smc_D3DDevice_Swap, Swap);
+REX_HOOK(smc_D3D_CDevice_BlockOnFence,
          BlockOnFence);
-REX_HOOK(rex_D3DDevice_BlockUntilIdle, BlockUntilIdle);
-REX_HOOK(rex_D3DDevice_SetShaderGPRAllocation, SetShaderGPRAllocation);
-REX_HOOK(rex_SynchronizeToPresentationInterval_D3D_YAXPAVCDevice_1_K_Z,
+REX_HOOK(smc_D3DDevice_BlockUntilIdle, BlockUntilIdle);
+REX_HOOK(smc_D3DDevice_SetShaderGPRAllocation, SetShaderGPRAllocation);
+REX_HOOK(smc_D3D_SynchronizeToPresentationInterval,
          SynchronizeToPresentationInterval);
-REX_HOOK(rex_D3DDevice_SetPredication, SetPredication);
-REX_HOOK(rex_KickOff_CDevice_D3D_QAAPAKXZ, KickOff);
-REX_HOOK(rex_BlockOnSecondaryPosition_CDevice_D3D_QAAXPAKK_Z,
+REX_HOOK(smc_D3DDevice_SetPredication, SetPredication);
+REX_HOOK(smc_D3D_CDevice_KickOff, KickOff);
+REX_HOOK(smc_D3D_CDevice_BlockOnSecondaryPosition,
          BlockOnSecondaryPosition);

@@ -1,4 +1,4 @@
-
+﻿
 
 #include "video.h"
 
@@ -29,11 +29,11 @@ CreateVulkanInterface(RenderWindow sdlWindow);
 extern std::unique_ptr<RenderInterface> CreateVulkanInterface();
 } // namespace plume
 
-namespace reodyssey::render {
+namespace rechron::render {
 void BeginRenderStateFrame();          // render_state.cpp
 void FlushPendingResolvesForPresent(); // render_state.cpp
 void EnsureFrameStarted();             // defined below
-} // namespace reodyssey::render
+} // namespace rechron::render
 
 namespace {
 
@@ -59,13 +59,13 @@ std::mutex g_copyMutex;
 
 std::unique_ptr<RenderDescriptorSet> g_textureDescriptorSet;
 std::mutex g_descriptorMutex;
-uint32_t g_descriptorCapacity = reodyssey::render::kNullTextureDescriptorCount;
+uint32_t g_descriptorCapacity = rechron::render::kNullTextureDescriptorCount;
 std::vector<uint32_t> g_freedDescriptors;
 std::array<std::unique_ptr<RenderTexture>,
-           reodyssey::render::kNullTextureDescriptorCount>
+           rechron::render::kNullTextureDescriptorCount>
     g_nullTextures;
 std::array<std::unique_ptr<RenderTextureView>,
-           reodyssey::render::kNullTextureDescriptorCount>
+           rechron::render::kNullTextureDescriptorCount>
     g_nullTextureViews;
 
 // Bindless sampler set + the graphics pipeline layout (XenosRecomp ABI).
@@ -88,7 +88,7 @@ uint32_t g_backBufferIndex = 0;
 RenderWindow g_window{};
 
 // The guest's final front-buffer surface to blit this frame (D3DDevice_Swap).
-reodyssey::render::GuestBaseTexture *g_presentSource = nullptr;
+rechron::render::GuestBaseTexture *g_presentSource = nullptr;
 
 void RebuildFramebuffers() {
   g_framebuffers.clear();
@@ -157,12 +157,12 @@ bool Video::Init(void *nativeWindowHandle, uint32_t width, uint32_t height) {
   g_copyFence = g_device->createCommandFence();
 
   {
-    using reodyssey::render::kNullTexture2DDescriptor;
-    using reodyssey::render::kNullTexture3DDescriptor;
-    using reodyssey::render::kNullTextureCubeDescriptor;
-    using reodyssey::render::kNullTextureDescriptorCount;
-    using reodyssey::render::kSamplerDescriptorSize;
-    using reodyssey::render::kTextureDescriptorSize;
+    using rechron::render::kNullTexture2DDescriptor;
+    using rechron::render::kNullTexture3DDescriptor;
+    using rechron::render::kNullTextureCubeDescriptor;
+    using rechron::render::kNullTextureDescriptorCount;
+    using rechron::render::kSamplerDescriptorSize;
+    using rechron::render::kTextureDescriptorSize;
 
     RenderDescriptorSetBuilder textureSetBuilder;
     textureSetBuilder.begin();
@@ -250,7 +250,7 @@ bool Video::Init(void *nativeWindowHandle, uint32_t width, uint32_t height) {
 
 bool Video::IsInitialized() { return g_initialized; }
 
-namespace reodyssey::render {
+namespace rechron::render {
 
 RenderInterface *Interface() { return g_interface.get(); }
 RenderDevice *Device() { return g_device.get(); }
@@ -349,7 +349,7 @@ void ExecuteUpload(const std::function<void(RenderCommandList *)> &record) {
   g_copyQueue->waitForCommandFence(g_copyFence.get());
 }
 
-} // namespace reodyssey::render
+} // namespace rechron::render
 
 void Video::Present() {
   if (!g_initialized) {
@@ -359,26 +359,26 @@ void Video::Present() {
   // The guest's draws/clears for this frame have already been recorded into the
   // open command list (targeting the guest's own render-target surfaces). Make
   // sure a frame is open even if the guest issued nothing.
-  reodyssey::render::EnsureFrameStarted();
+  rechron::render::EnsureFrameStarted();
   if (!g_frameOpen) {
     return; // acquire failed this frame
   }
 
-  reodyssey::render::FlushPendingResolvesForPresent();
+  rechron::render::FlushPendingResolvesForPresent();
 
   RenderTexture *backBuffer = g_swapChain->getTexture(g_backBufferIndex);
   RenderFramebuffer *framebuffer = g_framebuffers[g_backBufferIndex].get();
 
   g_commandList->setFramebuffer(nullptr);
   RenderPipeline *blitPipeline =
-      reodyssey::render::GetBlitPipeline(kBackbufferFormat);
+      rechron::render::GetBlitPipeline(kBackbufferFormat);
   const bool blit = g_presentSource != nullptr &&
                     g_presentSource->texture != nullptr &&
                     blitPipeline != nullptr;
   if (blit) {
     if (g_presentSource->descriptorIndex == 0) {
       g_presentSource->descriptorIndex =
-          reodyssey::render::AllocTextureDescriptor();
+          rechron::render::AllocTextureDescriptor();
     }
     g_textureDescriptorSet->setTexture(
         g_presentSource->descriptorIndex, g_presentSource->texture,

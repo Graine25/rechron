@@ -1,4 +1,4 @@
-// render/pipeline.cpp
+﻿// render/pipeline.cpp
 // shader loading
 
 #include <cstdint>
@@ -26,7 +26,7 @@
 
 using namespace plume;
 
-namespace reodyssey::render {
+namespace rechron::render {
 
 namespace {
 
@@ -379,4 +379,4 @@ RenderShader* LoadShader(GuestShader* guestShader, uint32_t specConstants) {
 #endif
 }
 
-}  // namespace reodyssey::render
+}  // namespace rechron::render

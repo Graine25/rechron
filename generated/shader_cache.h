@@ -5,11 +5,12 @@
 
 struct ShaderCacheEntry {
     uint64_t hash;
-    uint32_t dxilOffset;
-    uint32_t dxilSize;
-    uint32_t spirvOffset;
-    uint32_t spirvSize;
-    uint32_t specConstantsMask;
+    uint32_t dxil_offset;
+    uint32_t dxil_size;
+    uint32_t spirv_offset;
+    uint32_t spirv_size;
+    uint32_t spec_constants_mask;
+    void*    guest_shader = nullptr;
 };
 
 extern ShaderCacheEntry g_shaderCacheEntries[];

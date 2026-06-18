@@ -7,7 +7,7 @@
 
 #include <rex/types.h>
 
-namespace reodyssey::render {
+namespace rechron::render {
 
 struct GuestSamplerState {
   rex::be<uint32_t> data[6];

@@ -1,4 +1,4 @@
-// render/d3d_resource_hooks.cpp
+﻿// render/d3d_resource_hooks.cpp
 
 #include <algorithm>
 #include <bit>
@@ -22,9 +22,9 @@
 #include "render_internal.h"
 
 using namespace plume;
-using namespace reodyssey::ghp;
+using namespace rechron::ghp;
 
-namespace reodyssey::render {
+namespace rechron::render {
 
 // ---------------------------------------------------------------------------
 // Format helpers
@@ -454,7 +454,7 @@ static GuestShader *CreateShaderFromFunction(const uint32_t *function,
     if (entry->guest_shader == nullptr) {
       auto *shader = GuestNew<GuestShader>(type);
       shader->shaderCacheEntry = entry;
-      entry->guest_shader = reinterpret_cast<::GuestShader *>(shader);
+      entry->guest_shader = shader;
       REXGPU_INFO("CreateShader: hash=0x{:016X} type={} -> guestAddr=0x{:08X}",
                   hash, int(type), ToGuest(shader));
       return shader;
@@ -1122,4 +1122,4 @@ GuestTexture *LoadTextureFromMemory(const uint8_t *data, uint32_t size) {
   return texture;
 }
 
-} // namespace reodyssey::render
+} // namespace rechron::render

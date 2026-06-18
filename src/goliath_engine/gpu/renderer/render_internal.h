@@ -8,7 +8,7 @@
 
 #include <plume_render_interface.h>
 
-namespace reodyssey::render {
+namespace rechron::render {
 
 // Bindless table sizes (match the shader-side descriptor arrays / ABI).
 inline constexpr uint32_t kTextureDescriptorSize = 65536;
@@ -48,4 +48,4 @@ plume::RenderShader *LoadShader(GuestShader *guestShader,
 struct GuestVertexDeclaration;
 GuestVertexDeclaration *LookupVertexDeclarationAlias(uint32_t guestAddress);
 
-} // namespace reodyssey::render
+} // namespace rechron::render

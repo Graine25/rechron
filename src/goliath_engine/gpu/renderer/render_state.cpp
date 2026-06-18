@@ -1,4 +1,4 @@
-#include <algorithm>
+﻿#include <algorithm>
 #include <array>
 #include <bit>
 #include <cfloat>
@@ -30,7 +30,7 @@
 
 using namespace plume;
 
-namespace reodyssey::render {
+namespace rechron::render {
 
 void BindTextureDescriptor(uint32_t index, GuestBaseTexture *texture,
                            RenderTextureViewDimension viewDimension);
@@ -3468,4 +3468,4 @@ void DrawIndexedPrimitiveUP(GuestDevice *device, uint32_t primitiveType,
     SetVertexDeclaration(device, previousDeclaration);
 }
 
-} // namespace reodyssey::render
+} // namespace rechron::render

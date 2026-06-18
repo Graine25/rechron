@@ -1,14 +1,14 @@
-// render/render_state.h
+﻿// render/render_state.h
 
 
 #pragma once
 
 #include <cstdint>
 
-#include "render/guest_device.h"
-#include "render/guest_resources.h"
+#include "guest_device.h"
+#include "guest_resources.h"
 
-namespace reodyssey::render {
+namespace rechron::render {
 
 void BeginRenderStateFrame();
 
@@ -64,4 +64,4 @@ void DrawIndexedPrimitiveUP(GuestDevice *device, uint32_t primitiveType,
                             uint32_t indexStride, const void *vertexData,
                             uint32_t vertexStride);
 
-} // namespace reodyssey::render
+} // namespace rechron::render
