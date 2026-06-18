@@ -2030,12 +2030,17 @@ void SyncVertexDeclarationFromDevice(GuestDevice *device) {
 }
 
 void RestoreVertexDeclarationForShader(GuestDevice *device) {
-  if (g_pipelineState.vertexDeclaration != nullptr ||
-      g_pipelineState.vertexShader == nullptr)
+  if (g_pipelineState.vertexShader == nullptr)
     return;
+
   auto it = g_vertexShaderDeclarations.find(g_pipelineState.vertexShader);
-  if (it != g_vertexShaderDeclarations.end())
-    SetVertexDeclaration(device, it->second);
+  if (it == g_vertexShaderDeclarations.end())
+    return;
+
+  GuestVertexDeclaration *declaration = it->second;
+  if (declaration != nullptr &&
+      g_pipelineState.vertexDeclaration != declaration)
+    SetVertexDeclaration(device, declaration);
 }
 
 GuestVertexDeclaration *SimpleElementDeclaration() {
@@ -2883,7 +2888,9 @@ void RegisterVertexShaderDeclaration(GuestShader *vertexShader,
 
 void SetVertexShader(GuestDevice *device, GuestShader *shader) {
   SyncVertexDeclarationFromDevice(device);
-  if (shader != nullptr && g_pipelineState.vertexDeclaration != nullptr)
+  if (shader != nullptr && g_pipelineState.vertexDeclaration != nullptr &&
+      g_vertexShaderDeclarations.find(shader) ==
+          g_vertexShaderDeclarations.end())
     g_vertexShaderDeclarations[shader] = g_pipelineState.vertexDeclaration;
   SetDirtyValue(g_dirtyStates.pipelineState, g_pipelineState.vertexShader,
                 shader);
