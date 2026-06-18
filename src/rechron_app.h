@@ -7,6 +7,8 @@
 #pragma once
 
 #include <rex/rex_app.h>
+#include "goliath_engine/gpu/renderer/video.h"
+
 
 
 class rechronApp : public rex::ReXApp {
@@ -20,6 +22,7 @@ class rechronApp : public rex::ReXApp {
   }
 
   // Override virtual hooks for customization:
+
   std::optional<rex::PathConfig> OnFinalizePaths(
       const rex::PathConfig& defaults,
       std::function<void(rex::PathConfig)> resume) override {
@@ -31,6 +34,23 @@ class rechronApp : public rex::ReXApp {
     }
     return paths;
   }
+
+  // void OnPostInitLogging() override {}
+  void OnPreSetup(rex::RuntimeConfig& config) override {
+    // Disable the rex emulated GPU; the native Plume renderer owns presentation.
+    // rex sets config.graphics just before this hook, so resetting here wins.
+    config.graphics.reset();
+  }
+  // void OnLoadXexImage(std::string& xex_image) override {}
+  // void OnPostSetup() override {}
+  // void OnCreateDialogs(rex::ui::ImGuiDrawer* drawer) override {}
+
+  void OnPreLaunchModule() override {
+    if (auto* w = window()) {
+      Video::Init(w->GetNativeWindowHandle(), 1280, 720);
+    }
+  }
+  void OnShutdown() override { Video::Shutdown(); }
 
   // void OnConfigurePaths(rex::PathConfig& paths) override {}
 };
