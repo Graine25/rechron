@@ -365,6 +365,18 @@ CreateVertexDeclarationFromElements(GuestVertexElement *guestElements,
       decl->vertexStreams[d.stream] = true;
   }
   // RenderInputElement translation + hashing happens at pipeline-build time.
+  // TEMP diagnostic: dump the element layout (offset/type/usage) for the first
+  // few declarations so we can compare against the misdecoded POSITION.
+  static int s_dumped = 0;
+  if (s_dumped < 12) {
+    ++s_dumped;
+    REXGPU_INFO("VertexDecl[{}] count={}:", s_dumped, count);
+    for (uint32_t i = 0; i < count; ++i) {
+      const GuestVertexElement &d = decl->vertexElements[i];
+      REXGPU_INFO("  elem stream={} offset={} type=0x{:06X} usage={} idx={}",
+                  d.stream, d.offset, d.type, d.usage, d.usageIndex);
+    }
+  }
   return decl;
 }
 

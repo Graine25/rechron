@@ -82,25 +82,42 @@ struct PipelineState {
   RenderStencilOp stencilBackPass = RenderStencilOp::KEEP;
 };
 #pragma pack(pop)
+// Must match the XenosRecomp REEOT_RECOMP SharedConstants ABI exactly (see
+// thirdparty/XenosRecomp/XenosRecomp/shader_common.h): four texture-index
+// arrays + samplers fill 0..319, then g_BooleansArr[2] at 320, then the
+// swap/half-pixel/format fields at 352..391. The shaders read halfPixelOffset
+// at byte 356 and the swap flags at 352..388; a mismatched layout makes them
+// read garbage and place every vertex off-screen.
 struct SharedConstants {
-  uint32_t texture2DIndices[16]{};
-  uint32_t texture3DIndices[16]{};
-  uint32_t textureCubeIndices[16]{};
-  uint32_t samplerIndices[16]{};
-  uint32_t booleans{};
-  uint32_t swappedTexcoords{};
-  uint32_t swappedNormals{};
-  uint32_t swappedBinormals{};
-  uint32_t swappedTangents{};
-  uint32_t swappedBlendWeights{};
-  float halfPixelOffsetX{};
-  float halfPixelOffsetY{};
+  uint32_t texture2DIndices[16]{};    // 0   (c0)
+  uint32_t texture3DIndices[16]{};    // 64  (c4)
+  uint32_t textureCubeIndices[16]{};  // 128 (c8)
+  uint32_t texture1DIndices[16]{};    // 192 (c12)
+  uint32_t samplerIndices[16]{};      // 256 (c16)
+  uint32_t booleans[8]{};             // 320 (c20) -- g_BooleansArr[2]
+  uint32_t swappedTexcoords{};        // 352 (c22.x)
+  float halfPixelOffsetX{};           // 356 (c22.y)
+  float halfPixelOffsetY{};           // 360 (c22.z)
+  float alphaThreshold{};             // 364 (c22.w)
+  uint32_t swappedNormals{};          // 368 (c23.x)
+  uint32_t swappedBinormals{};        // 372 (c23.y)
+  uint32_t swappedTangents{};         // 376 (c23.z)
+  uint32_t swappedBlendWeights{};     // 380 (c23.w)
+  uint32_t swappedPositions{};        // 384 (c24.x)
+  uint32_t sintTexcoords{};           // 388 (c24.y)
+  // Renderer-side extras (not part of the shader ABI; placed after it).
   float clipPlane[4]{};
   uint32_t clipPlaneEnabled{};
-  float alphaThreshold{};
   uint32_t conditionalSurveyIndex{};
   uint32_t conditionalRenderingIndex{};
 };
+static_assert(offsetof(SharedConstants, samplerIndices) == 256);
+static_assert(offsetof(SharedConstants, booleans) == 320);
+static_assert(offsetof(SharedConstants, swappedTexcoords) == 352);
+static_assert(offsetof(SharedConstants, halfPixelOffsetX) == 356);
+static_assert(offsetof(SharedConstants, alphaThreshold) == 364);
+static_assert(offsetof(SharedConstants, swappedPositions) == 384);
+static_assert(offsetof(SharedConstants, sintTexcoords) == 388);
 
 struct DirtyStates {
   bool renderTargetAndDepthStencil;
@@ -1898,9 +1915,13 @@ void FlushRenderState(GuestDevice *device) {
 
   // Booleans and sampler indices feed the shared constants (16 bits each in
   // the XenosRecomp ABI).
-  g_sharedConstants.booleans =
-      (device->vertexShaderBoolConstants[0].get() & 0xFFFF) |
-      ((device->pixelShaderBoolConstants[0].get() & 0xFFFF) << 16);
+  // g_BooleansArr[2]: 128 vertex bool constants (booleans[0..3]) followed by
+  // 128 pixel bool constants (booleans[4..7]), per the XenosRecomp ABI.
+  for (uint32_t i = 0; i < 4; ++i) {
+    g_sharedConstants.booleans[i] = device->vertexShaderBoolConstants[i].get();
+    g_sharedConstants.booleans[4 + i] =
+        device->pixelShaderBoolConstants[i].get();
+  }
   FlushSamplerStates(device);
 
   // Constants are byte-swapped out of guest memory each draw (no dirty-range
@@ -2640,6 +2661,7 @@ void BeginRenderStateFrame() {
       g_sharedConstants.texture2DIndices[i] = kNullTexture2DDescriptor;
       g_sharedConstants.texture3DIndices[i] = kNullTexture3DDescriptor;
       g_sharedConstants.textureCubeIndices[i] = kNullTextureCubeDescriptor;
+      g_sharedConstants.texture1DIndices[i] = kNullTexture2DDescriptor;
     }
     g_sharedConstantsInitialized = true;
   }
