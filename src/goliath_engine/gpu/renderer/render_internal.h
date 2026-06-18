@@ -47,5 +47,7 @@ plume::RenderShader *LoadShader(GuestShader *guestShader,
 
 struct GuestVertexDeclaration;
 GuestVertexDeclaration *LookupVertexDeclarationAlias(uint32_t guestAddress);
+void RegisterVertexShaderDeclaration(GuestShader *vertexShader,
+                                     GuestVertexDeclaration *declaration);
 
 } // namespace rechron::render

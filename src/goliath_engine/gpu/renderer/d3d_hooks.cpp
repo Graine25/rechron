@@ -75,6 +75,14 @@ template <typename T> T *AsReo(T *p) {
   return rr::IsReoResource(p) ? p : nullptr;
 }
 
+// Goliath builds shader "bundles" {vertexShader, pixelShader, vertexDeclaration}
+// via sub_82109688, which calls XGSetVertexDeclaration immediately before
+// CreateVertexShader. XGSetVertexDeclaration is only ever called from these
+// bundle paths, so we stash the declaration it builds and pair it with the next
+// vertex shader created -- giving the draw path an input layout (Goliath stores
+// no declaration on the device).
+GuestVertexDeclaration *g_pendingBundleDeclaration = nullptr;
+
 struct PendingImmediateDraw {
   GuestDevice *device = nullptr;
   uint32_t primType = 0;
@@ -187,7 +195,12 @@ CreateVertexDeclaration(rr::GuestVertexElement *elements) {
   return rr::CreateVertexDeclaration(elements);
 }
 GuestShader *CreateVertexShader(const uint32_t *function) {
-  return rr::CreateVertexShader(function);
+  GuestShader *shader = rr::CreateVertexShader(function);
+  if (g_pendingBundleDeclaration != nullptr) {
+    rr::RegisterVertexShaderDeclaration(shader, g_pendingBundleDeclaration);
+    g_pendingBundleDeclaration = nullptr;
+  }
+  return shader;
 }
 GuestShader *CreatePixelShader(const uint32_t *function) {
   return rr::CreatePixelShader(function);
@@ -275,8 +288,9 @@ uint32_t IndexBufferLock(GuestBuffer *buffer, uint32_t offset, uint32_t size,
 void XGSetVertexDeclaration(rr::GuestVertexElement *elements,
                             void *guestDeclaration) {
   g_origXGSetVertexDeclaration(elements, guestDeclaration);
-  rr::RegisterVertexDeclarationAlias(ghp::ToGuest(guestDeclaration),
-                                     rr::CreateVertexDeclaration(elements));
+  GuestVertexDeclaration *decl = rr::CreateVertexDeclaration(elements);
+  rr::RegisterVertexDeclarationAlias(ghp::ToGuest(guestDeclaration), decl);
+  g_pendingBundleDeclaration = decl; // paired with the next CreateVertexShader
 }
 
 

@@ -2848,6 +2848,17 @@ void SetTexture(GuestDevice * /*device*/, uint32_t index,
   g_textures[index] = texture;
 }
 
+// Goliath bundles {vertexShader, pixelShader, vertexDeclaration} together (the
+// guest has no D3DDevice_SetVertexDeclaration and DrawVertices reads no decl
+// pointer from the device). Recording the pairing lets
+// RestoreVertexDeclarationForShader supply the input layout for every draw that
+// binds this vertex shader.
+void RegisterVertexShaderDeclaration(GuestShader *vertexShader,
+                                     GuestVertexDeclaration *declaration) {
+  if (vertexShader != nullptr && declaration != nullptr)
+    g_vertexShaderDeclarations[vertexShader] = declaration;
+}
+
 void SetVertexShader(GuestDevice *device, GuestShader *shader) {
   SyncVertexDeclarationFromDevice(device);
   if (shader != nullptr && g_pipelineState.vertexDeclaration != nullptr)
