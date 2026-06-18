@@ -1,0 +1,40 @@
+endian big
+comtype zlib_noerror
+get idstring long
+get chunksize long
+get baseoff long
+get unkown long
+get files long
+get totalzsize long
+get totalsize long
+get name filename
+set offset baseoff
+get NAME basename
+string NAME += ".pak"
+savepos tmp
+for i = 0 < files
+
+if i == 0
+  get size long
+else
+  goto tmp
+  get old long
+  savepos tmp
+  get size long
+  math size - old
+endif
+
+if totalzsize >= 0x8000
+  set zsize 0x8000
+else
+  set zsize totalzsize
+endif
+
+clog MEMORY_FILE offset zsize size
+append
+log name 0 size MEMORY_FILE
+append
+math offset += 0x8000
+math totalzsize - 0x8000
+
+next i
