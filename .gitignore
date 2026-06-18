@@ -4,3 +4,4 @@
 /.vs
 /generated/hlsl
 /paks
+generated/shader_cache.cpp
