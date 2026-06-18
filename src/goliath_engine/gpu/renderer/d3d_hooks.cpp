@@ -173,11 +173,10 @@ GuestBuffer *CreateIndexBuffer(uint32_t length, uint32_t /*usage*/,
                                uint32_t format) {
   return rr::CreateIndexBuffer(length, format);
 }
-GuestTexture *CreateTexture(uint32_t width, uint32_t height, uint32_t depth,
-                            uint32_t levels, uint32_t usage, uint32_t format,
-                            uint32_t pool, uint32_t type) {
-  return rr::CreateTexture(width, height, depth, levels, usage, format, pool,
-                           type);
+GuestTexture *CreateTexture(uint32_t width, uint32_t height, uint32_t usage,
+                            uint32_t format) {
+  return rr::CreateTexture(width, height, /*depth=*/1, /*levels=*/1, usage,
+                           format, /*pool=*/0, /*type=*/0);
 }
 GuestSurface *CreateSurface(uint32_t width, uint32_t height, uint32_t format,
                             uint32_t multiSample) {
